@@ -1,0 +1,54 @@
+#!/usr/bin/zsh
+# -*- sh-mode -*-
+
+# front end for all the "jv" (java) commands
+
+typeset -gA jv_aliases
+
+jv_aliases=(
+    l     log
+    lg    log
+    d     diff
+)
+
+subcmd=$1
+
+echo "subcmd: $subcmd" >&2
+
+if [[ $# -eq 0 ]]
+then
+    dir=$0:h
+    echo "subcommands:"
+    for i in $dir/jv-*(.)
+    do
+        n=$i:t:r:s/jv-//
+        echo "    $n"
+    done
+    exit 1
+fi
+
+shift
+
+alias=${jv_aliases[$subcmd]}
+
+if [[ "$alias" ]]
+then
+    subcmd=$alias
+fi
+
+dir=$0:h
+prog="$dir/jv-$subcmd.rb"
+
+if [[ ! -e $prog ]]
+then
+   prog="$dir/jv-$subcmd.sh"
+fi
+
+if [[ -e $prog ]]
+then
+    "$prog" "$@"
+else
+    echo "not valid: $prog" >&2
+fi
+
+exit 0
