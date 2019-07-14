@@ -6,22 +6,21 @@
 typeset -gA jv_aliases
 
 jv_aliases=(
-    l     log
-    lg    log
-    d     diff
+    mf    print-manifest
+    r     run
+    v     version
 )
 
 subcmd=$1
-
-echo "subcmd: $subcmd" >&2
+prefix=jv
 
 if [[ $# -eq 0 ]]
 then
     dir=$0:h
     echo "subcommands:"
-    for i in $dir/jv-*(.)
+    for i in $dir/$prefix-*(.)
     do
-        n=$i:t:r:s/jv-//
+        n=`echo $i:t:r | sed -e "s/$prefix-//"`
         echo "    $n"
     done
     exit 1
@@ -37,18 +36,16 @@ then
 fi
 
 dir=$0:h
-prog="$dir/jv-$subcmd.rb"
+prog="$prefix-$subcmd"
+for extname in "" .rb .sh .zsh
+do
+    name=$dir/$prog$extname
+    if [[ -e $name ]]
+    then
+        "$name" "$@"
+        exit $?
+    fi
+done
 
-if [[ ! -e $prog ]]
-then
-   prog="$dir/jv-$subcmd.sh"
-fi
-
-if [[ -e $prog ]]
-then
-    "$prog" "$@"
-else
-    echo "not valid: $prog" >&2
-fi
-
-exit 0
+echo "not valid: $prog" >&2
+exit 1
